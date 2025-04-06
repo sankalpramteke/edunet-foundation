@@ -37,11 +37,11 @@ app.post("/signup", async (req, res) => {
 // ✅ Signin Route (Roll No & Password)
 app.post("/signin", async (req, res) => {
   try {
-    const { rollNo, password } = req.body;
-    const user = await Signup.findOne({ rollNo });
+    const { email, password } = req.body;
+    const user = await Signup.findOne({ email });
 
     if (!user || user.password !== password) {
-      return res.status(401).json({ error: "Invalid Roll No or Password" });
+      return res.status(401).json({ error: "Invalid email No or Password" });
     }
 
     res.status(200).json({ message: "Signin Successful", user });

@@ -22,7 +22,7 @@ const Dashboard = () => {
           axios.get("http://localhost:5001/user/auctions", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("http://localhost:5001/user/bids", {
+          axios.get("http://localhost:5000/user/bids", {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);

@@ -16,7 +16,7 @@ COPY . .
 
 # Add healthcheck
 HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:5001 || exit 1
+  CMD wget --no-verbose --tries=1 --spider http://localhost:5000 || exit 1
 
 # Expose port 5001
 EXPOSE 5001

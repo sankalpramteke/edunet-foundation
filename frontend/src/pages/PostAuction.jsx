@@ -51,7 +51,7 @@ const PostAuction = () => {
         closingTime: formData.closingTime
       };
 
-      await axios.post("http://localhost:5001/auction", payload, {
+      await axios.post("http://localhost:5000/auction", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"

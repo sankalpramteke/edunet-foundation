@@ -12,7 +12,7 @@ const AuctionItem = () => {
   useEffect(() => {
     const fetchAuction = async () => {
       try {
-        const response = await axios.get(`http://localhost:5001/auctions/${id}`);
+        const response = await axios.get(`http://localhost:5000/auctions/${id}`);
         setAuction(response.data);
       } catch (err) {
         setError("Failed to load auction details");
@@ -34,7 +34,7 @@ const AuctionItem = () => {
       }
 
       const response = await axios.post(
-        `http://localhost:5001/bid/${id}`,
+        `http://localhost:5000/bid/${id}`,
         { bid: Number(bidAmount) },
         {
           headers: { Authorization: `Bearer ${token}` }

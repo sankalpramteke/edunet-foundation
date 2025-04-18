@@ -1,80 +1,57 @@
-const express = require("express");
-const mongoose = require("mongoose");
-const Signup = require("./Models/Signup.js");
-const AuctionModel = require("./Models/Auction.js");
+const express = require('express');
+const cors = require('cors');
+const mongoose = require('mongoose');
+require('dotenv').config();
 
 const app = express();
+
+// CORS configuration to allow requests from frontend
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
+// Middleware
 app.use(express.json());
-const port = 5000;
 
-// ✅ MongoDB Connection - Add Database Name
-mongoose
-  .connect("mongodb+srv://sankalp:1234abcd@cluster0.f9ml6v3.mongodb.net/myDatabase") // Replace 'myDatabase' with actual database name
-  .then(() => {
-    console.log("✅ Connected to MongoDB");
-  })
-  .catch((err) => {
-    console.error("❌ MongoDB Connection Failed:", err.message);
-  });
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/auth/signup', require('./routes/signupRoutes'));
+app.use('/api/auctions', require('./routes/auctionRoutes'));
 
-// ✅ Test Route
-app.get("/hello", (req, res) => {
-  res.send("Hello World!");
+// Basic route for server health check
+app.get('/', (req, res) => {
+  res.status(200).json({ message: 'Server is running' });
 });
 
-// ✅ Signup Route (New Fields Included)
-app.post("/signup", async (req, res) => {
-  try {
-    const newUser = await Signup.create(req.body);
-    res.status(200).json(newUser);
-    console.log("New User:", req.body);
-  } catch (error) {
-    console.error("Signup Error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ✅ Signin Route (Roll No & Password)
-app.post("/signin", async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const user = await Signup.findOne({ email });
-
-    if (!user || user.password !== password) {
-      return res.status(401).json({ error: "Invalid email No or Password" });
+// Connect to MongoDB
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/edunet', {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => {
+  console.log('Connected to MongoDB');
+  // Log the current database name
+  console.log('Database Name:', mongoose.connection.name);
+  // Log collections
+  mongoose.connection.db.listCollections().toArray((err, collections) => {
+    if (err) {
+      console.error('Error listing collections:', err);
+    } else {
+      console.log('Available collections:', collections.map(c => c.name));
     }
-
-    res.status(200).json({ message: "Signin Successful", user });
-  } catch (error) {
-    console.error("Signin Error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
+  });
+})
+.catch(err => {
+  console.error('MongoDB connection error:', err);
+  console.error('Connection string:', process.env.MONGODB_URI);
+  process.exit(1); // Exit if cannot connect to database
 });
 
-// ✅ Post Auction Route (No Change)
-app.post("/api/postauction", async (req, res) => {
-  try {
-    const Auction1 = await AuctionModel.create(req.body);
-    res.status(200).json(Auction1);
-    console.log("Auction Data:", req.body);
-  } catch (error) {
-    console.error("Auction Error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ✅ Get All Auction Data Route (Fixed Error Handling)
-app.get("/getauctiondata", async (req, res) => {
-  try {
-    const auctions = await AuctionModel.find();
-    res.status(200).json(auctions);
-  } catch (error) {
-    console.error("Auction Fetch Error:", error.message);
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ✅ Start Server
-app.listen(port, () => {
-  console.log(`🚀 Server running on http://localhost:${port}`);
+// Start server
+const PORT = process.env.PORT || 5001;
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });

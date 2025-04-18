@@ -36,31 +36,46 @@ const PostAuction = () => {
     e.preventDefault();
     setLoading(true);
     setError("");
-
+  
     try {
       const token = localStorage.getItem("token");
       if (!token) {
         navigate("/login");
         return;
       }
-
-      const payload = {
-        itemName: formData.itemName,
-        description: formData.description,
-        startingBid: Number(formData.startingBid),
-        closingTime: formData.closingTime
-      };
-
-      await axios.post("http://localhost:5000/auction", payload, {
+  
+      // Create a FormData object to handle file uploads
+      const formDataToSend = new FormData();
+      formDataToSend.append("title", formData.itemName.trim());
+      formDataToSend.append("description", formData.description.trim());
+      formDataToSend.append("startingBid", parseFloat(formData.startingBid));
+      formDataToSend.append("closingTime", new Date(formData.closingTime).toISOString());
+      
+      // Only append the image if it exists
+      if (formData.image) {
+        formDataToSend.append("img", formData.image);
+      }
+  
+      const response = await axios.post("http://localhost:5001/api/auctions", formDataToSend, {
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json"
+          "Content-Type": "multipart/form-data"
         }
       });
-
-      navigate("/dashboard");
+  
+      if (response.data.success) {
+        navigate("/dashboard");
+      } else {
+        setError(response.data.error || "Failed to create auction");
+      }
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create auction");
+      console.error("Error creating auction:", err.response?.data || err.message);
+      if (err.response?.data?.error === "TokenExpiredError: jwt expired") {
+        localStorage.removeItem("token");
+        navigate("/login");
+        return;
+      }
+      setError(err.response?.data?.error || "Failed to create auction");
     } finally {
       setLoading(false);
     }

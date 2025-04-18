@@ -19,17 +19,22 @@ const Dashboard = () => {
     const fetchUserData = async () => {
       try {
         const [auctionsResponse, bidsResponse] = await Promise.all([
-          axios.get("http://localhost:5001/user/auctions", {
+          axios.get("http://localhost:5001/api/auctions/user/auctions", {
             headers: { Authorization: `Bearer ${token}` }
           }),
-          axios.get("http://localhost:5000/user/bids", {
+          axios.get("http://localhost:5001/api/auctions/user/bids", {
             headers: { Authorization: `Bearer ${token}` }
           })
         ]);
 
-        setUserAuctions(auctionsResponse.data);
+        setUserAuctions(auctionsResponse.data.data);
         setUserBids(bidsResponse.data);
       } catch (err) {
+        if (err.response?.data?.error === "TokenExpiredError: jwt expired") {
+          localStorage.removeItem("token");
+          navigate("/login");
+          return;
+        }
         setError("Failed to load user data");
       } finally {
         setLoading(false);

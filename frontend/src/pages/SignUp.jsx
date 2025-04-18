@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import Toast from "../components/Toast";
 
 const SignUp = () => {
     const navigate = useNavigate();
@@ -8,6 +9,9 @@ const SignUp = () => {
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [error, setError] = useState("");
+    const [showToast, setShowToast] = useState(false);
+    const [toastMessage, setToastMessage] = useState("");
+    const [toastType, setToastType] = useState("success");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -19,7 +23,7 @@ const SignUp = () => {
         }
 
         try {
-            const response = await fetch("http://localhost:5000/signup", {
+            const response = await fetch("http://localhost:5001/api/auth/signup", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -30,7 +34,12 @@ const SignUp = () => {
             const data = await response.json();
 
             if (response.ok) {
-                navigate("/login");
+                setToastMessage("Registration successful! Redirecting to login...");
+                setToastType("success");
+                setShowToast(true);
+                setTimeout(() => {
+                    navigate("/login");
+                }, 1500);
             } else {
                 setError(data.error || "Failed to create account");
             }
@@ -118,6 +127,13 @@ const SignUp = () => {
                     </button>
                 </p>
             </div>
+            {showToast && (
+                <Toast
+                    message={toastMessage}
+                    type={toastType}
+                    onClose={() => setShowToast(false)}
+                />
+            )}
         </div>
     );
 };
